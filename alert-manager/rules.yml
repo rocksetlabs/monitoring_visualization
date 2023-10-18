@@ -1,0 +1,129 @@
+groups:
+
+- name: Rockset
+  rules:
+
+  - alert: 'Query Queue Size is not 0'
+    expr: rate(rockset_query_queue_size[5m]) > 0
+    for: 30s
+    labels:
+      severity: 'critical'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+    annotations:
+      title: "Query Queue Size"
+      summary: "Query Queue Size is: `{{$value}}`"
+
+  - alert: 'Queries Erroring'
+    expr: rate(rockset_query_errors[5m]) > 0
+    labels:
+      severity: 'critical'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+      error_code: '{{ $labels.error_code }}'
+    annotations:
+      title: "Queries Erroring"
+      summary: "Query Errors: `{{$value}}`"
+
+  - alert: 'Query Lambdas Erroring'
+    expr: rate(rockset_query_lambda_errors[5m]) > 0
+    labels:
+      severity: 'critical'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+      workspace_name: '{{ $labels.workspace_name }}'
+      query_lambda: '{{ $labels.query_lambda }}'
+      tag: '{{ $labels.tag }}'
+      error_code: '{{ $labels.error_code }}'
+    annotations:
+      title: "Query Lambdas are Erroring"
+      summary: "Query Lambda: `{{$labels.workspace_name}}.{{$labels.workspace_name}}` on VI: `{{$labels.virtual_instance_id}}` errored: `{{$value}}` with error_code: `{{$labels.error_code}}`"
+
+  - alert: 'Query Latency to High'
+    expr: max_over_time(rate(rockset_query_latency_seconds_sum[5m])[5m:]) > 5
+    for: 5m
+    labels:
+      severity: 'warning'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+    annotations:
+      title: "Query Queue Size"
+      summary: "Query Latency is: `{{$value}}`"
+
+  - alert: 'Query Lambda Latency High'
+    expr: max_over_time(rate(rockset_query_lambda_latency_seconds_sum[5m])[5m:]) > 5
+    for: 5m
+    labels:
+      severity: 'critical'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+    annotations:
+      title: "Query Queue Size"
+      summary: "Query Queue Size is: `{{$value}}`"
+
+  - alert: 'Leaf CPU sustained high'
+    expr: rockset_leaf_cpu_utilization_percentage  > 85
+    for: 5m
+    labels:
+      severity: 'warning'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+    annotations:
+      title: "Leaf CPU sustained high"
+      summary: "Leaf CPU is: `{{$value}}`"
+
+  - alert: 'Leaf Memory sustained high'
+    expr: rockset_leaf_memory_utilization_percentage  > 85
+    for: 5m
+    labels:
+      severity: 'warning'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+    annotations:
+      title: "Leaf Memory sustained high"
+      summary: "Leaf Memory is: `{{$value}}`"
+
+  - alert: 'Aggregator CPU sustained high'
+    expr: rockset_agg_cpu_utilization_percentage  > 85
+    for: 5m
+    labels:
+      severity: 'warning'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+    annotations:
+      title: "Aggregator CPU sustained high"
+      summary: "Aggregator CPU is: `{{$value}}`"
+
+  - alert: 'Aggregator Memory sustained high'
+    expr: rockset_agg_memory_utilization_percentage  > 85
+    for: 5m
+    labels:
+      severity: 'warning'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+    annotations:
+      title: "Aggregator Memory sustained high"
+      summary: "Aggregator Memory is: `{{$value}}`"
+
+  - alert: 'Data Discovery Latency to high'
+    expr: histogram_quantile(0.95, sum by(le, workspace_name, collection_name, job) (rate(rockset_collection_data_process_latency_bucket[5m]))) > 2
+    for: 1m
+    labels:
+      severity: 'critical'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+      collection: '{{ $labels.workspace }}.{{ $labels.collection_name }}'
+    annotations:
+      title: "Data Process Latency to high"
+      summary: "Data discovery latency is: `{{$value}}` for {{ $labels.workspace }}.{{ $labels.collection_name }}"
+
+  - alert: 'Data Process Latency to high'
+    expr: histogram_quantile(0.95, sum by(le, workspace_name, collection_name, job) (rate(rockset_collection_data_discovery_latency_bucket[5m]))) > 2
+    for: 1m
+    labels:
+      severity: 'critical'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+      collection: '{{ $labels.workspace }}.{{ $labels.collection_name }}'
+    annotations:
+      title: "Data Discovery Latency to high"
+      summary: "Data process latency is: `{{$value}}` for {{ $labels.workspace }}.{{ $labels.collection_name }}"
+
+  - alert: 'Ingestion Errors'
+    expr: rate(rockset_collection_parse_errors[5m]) > 0
+    labels:
+      severity: 'critical'
+      virtual_instance: '{{ $labels.virtual_instance_id }}'
+      collection: '{{ $labels.workspace }}.{{ $labels.collection_name }}'
+    annotations:
+      title: "Ingestion Errors"
+      summary: "Ingestion Errors: `{{$value}}` for {{ $labels.workspace }}.{{ $labels.collection_name }}"
