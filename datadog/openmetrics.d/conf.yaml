@@ -11,8 +11,6 @@ instances:
     metrics:
       - rockset_leaf_cpu_utilization_percentage
       - rockset_leaf_memory_utilization_percentage
-      - rockset_agg_cpu_utilization_percentage
-      - rockset_agg_memory_utilization_percentage
       - rockset_collections
       - rockset_collection_size_bytes
       - rockset_collection_documents
